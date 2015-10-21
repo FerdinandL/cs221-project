@@ -101,6 +101,36 @@ def groupLinears(linears):
   return grouped
 
 
+def groupSize(group):
+  locations = set()
+  for linear in group:
+    for i in xrange(linear[0][0], linear[0][1]):
+      for j in xrange(linear[1][0], linear[1][1]):
+        locations.add((i,j))
+  return len(locations)
+
+def scoreBoard(board):
+  linears = findLinears(board)
+  grouped = groupLinears(linears)
+  combos = 0
+  score = 0.0
+  for index, colorGroups in enumerate(grouped):
+    colorScore = 0.0
+    combos += len(colorGroups)
+    for linearGroup in colorGroups:
+      groupScore = (groupSize(linearGroup) + 1) * 0.25
+      colorScore += groupScore
+    score += colorScore
+  score *= (combos + 3) * 0.25
+  return score
+
+
+def testScore(board):
+  print '************* score for board', scoreBoard(board)
+  printBoard(board)
+  print '***********************************\n'
+
+
 def testGroupedLinears(board):
   linears = findLinears(board)
   grouped = groupLinears(linears)
@@ -115,6 +145,7 @@ def testGroupedLinears(board):
           for j in xrange(linear[1][0], linear[1][1]):
             boardCopy[i][j] = numColors
       printBoard(boardCopy)
+      print ''
     print '***********************************\n'
 
 
@@ -131,11 +162,6 @@ def testLinears(board):
         for j in xrange(linear[1][0], linear[1][1]):
           boardCopy[i][j] = numColors
       printBoard(boardCopy)
+      print ''
     print '***********************************\n'
 
-
-
-
-
-def randomSearch(board, moves=40, iters=100):
-  pass
