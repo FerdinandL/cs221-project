@@ -2,19 +2,21 @@ import random
 from copy import deepcopy
 
 numColors = 6
+numRows = 5
+numCols = 6
 colors = ['F', 'G', 'W', 'L', 'D', 'H']
 
 def getRandomBoard(seed=None):
   if seed != None:
     random.seed(seed)
-  board = [[0]*6 for i in xrange(5)]
-  for i in xrange(5):
-    for j in xrange(6):
-      board[i][j] = random.randint(0, 5)
+  board = [[0]*numCols for i in xrange(numRows)]
+  for i in xrange(numRows):
+    for j in xrange(numCols):
+      board[i][j] = random.randint(0, numRows)
   return board
 
 def printBoard(board):
-  for i in xrange(5):
+  for i in xrange(numRows):
     print ' '.join(colors[c] if c < numColors else '*' for c in board[i])
 
 
@@ -22,11 +24,11 @@ def findLinears(board):
   linears = [([], []) for c in xrange(numColors)]
 
   # find linear groups in the rows
-  for i in xrange(5):
+  for i in xrange(numRows):
     row = board[i]
     color = None
     num = 0
-    for j in xrange(6):
+    for j in xrange(numCols):
       if row[j] == color:
         num += 1
         continue
@@ -35,13 +37,13 @@ def findLinears(board):
       color = row[j]
       num = 1
     if num >= 3:
-      linears[color][0].append(((i, i+1), (6-num, 6)))
+      linears[color][0].append(((i, i+1), (numCols-num, numCols)))
 
   #find linear groups in the columns
-  for j in xrange(6):
+  for j in xrange(numCols):
     color = None
     num = 0
-    for i in xrange(5):
+    for i in xrange(numRows):
       if board[i][j] == color:
         num += 1
         continue
@@ -50,7 +52,7 @@ def findLinears(board):
       color = board[i][j]
       num = 1
     if num >= 3:
-      linears[color][1].append(((5-num, 5), (j, j+1)))
+      linears[color][1].append(((numRows-num, numRows), (j, j+1)))
 
   return linears
 
