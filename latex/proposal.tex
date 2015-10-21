@@ -4,7 +4,6 @@
 \usepackage{cite}
 \usepackage{graphicx}
 \usepackage{algorithmic}
-%\DeclareGraphicsExtensions{.png}
 \begin{document}
 \title{How to Cheat in Puzzles and Dragons}
 \author{Amanda~Chow, Ted~Li, and~David~Zeng}
@@ -21,10 +20,10 @@
 \includegraphics[scale=0.5]{pad.jpg}
 \end{figure}
 \vspace*{-0.1in}
-The puzzles in the game present you with randomized puzzle board (shown above) with $5$ rows and $6$ columns. Each of these spaces contains one of six orbs: Fire, Water, Grass, Light, Dark, and Heart. To begin solving the puzzle, you select an orb and drag it. As you drag it through other orbs, the other orbs will swap locations with the orb you are dragging, effectively pushing the orbs in your path behind you. The goal of dragging the orb around is to position other orbs so that you form groups of orbs of the same color. Once you let go of your selected orb, or reach a $4$ second limit, your turn is completed. The game then finds groups of orbs of the same color and gives you a score based on the size of these groups and the number of groups.
+The puzzles in the game present you with randomized puzzle board (shown above) with $5$ rows and $6$ columns. Each of these spaces contains one of six orbs: Fire, Water, Grass, Light, Dark, and Heart. To begin solving the puzzle, you select an orb and drag it. As you drag it through other orbs, the other orbs will swap locations with the orb you are dragging, effectively pushing the orbs in your path behind you. The goal of dragging the orb around is to position other orbs so that you form groups of orbs of the same color. Once you let go of your selected orb, or reach a $4$ second limit, your turn is completed. The game then finds adjacent groups of orbs of the same color and gives you a score based on the size of these groups and the number of groups.
 
 \section{Gameplay Implementation}
-Our project focuses on creating a AI designed for cheating on the puzzles. We decided to frame the PAD puzzle as the following problem: given a limited number of moves, what is the highest scoring path one can achieve on a random board? If our AI could find an optimal path to drag an orb around, then a human player could run the AI and follow its suggested path, and easily defeat the monsters in the dungeons.
+Our project focuses on creating a AI designed for cheating on the puzzles. We decided to frame the PAD puzzle as the following problem: given a limited number of moves, what is the highest scoring path one can achieve on a random board? The \textbf{inputs} of our AI would be a $5 \times 6$ grid of orbs, represented as integers $0$ through $5$, and the \textbf{outputs} would be an optimal path, represented as a list of $(x,y)$ coordinates.
 \vspace*{-0.1in}
 \subsection{Restrictions on the Game}
 PAD allows the player unlimited time to think about the board, but only four seconds to drag around an orb. For a good player, this usually equates to dragging the orb around $40$ spaces after some initial thought to plan the path. Therefore, for our AI to fairly emulate what is possible for a human, it will also need to limit the number of moves it can execute on a turn to $40$. PAD also allows the player to drag an orb in all $8$ ordinal directions, but for most human players, diagonal dragging is very difficult to execute accurately, especially given the time limit and the small size of the mobile screen. Therefore, we chose to also limit our AI to only make moves in $4$ ordinal directions: up, down, left, right.
@@ -40,8 +39,9 @@ To properly evaluate the performance of our AI, we need a metric to evaluate the
 The actual PAD game also takes into account orb types and how they interact with the offensive attributes of your team and the defenses of the actual monsters, but the pure mathematical score of the board is computed in an identical manner.
 
 \section{Oracle}
-It was difficult to find a guaranteed oracle for PAD, since there is no additional information beyond the puzzle board that is of any use. Even with a $40$ move limit and a ban on diagonal movements, there are far too many states to carry out an exhaustive search. We did discover a PAD web application that runs a search algorithm with greedy heuristics. Using our score metric, and a limit $40$ moves with no diagonal operations, the application averaged a score of roughly $15$, which corresponds to aligning $6$ groups of three orbs each.
+It was difficult to find a guaranteed oracle for PAD, since there is no additional information beyond the puzzle board that is of any use. Even with a $40$ move limit and a ban on diagonal movements, there are far too many states to carry out an exhaustive search. We did discover a PAD web application, pndopt (Puzzles and Dragons Optimizer) \cite{1}, that runs a search algorithm with greedy heuristics. Using our score metric, and a limit $40$ moves with no diagonal operations, the PAD Optimizer averaged a score of $15.52$ with an average path length of $28.57$ over $100$ randomized boards, which corresponds roughly to aligning $6$ groups of three orbs each.
 
+\vspace*{-0.1in}
 \section{Baseline AI Implementation}
 Our baseline AI implementation is based on a player making random moves. It performs the following algorithm.
 \begin{algorithmic}[1]
@@ -63,6 +63,7 @@ Our baseline AI implementation is based on a player making random moves. It perf
 \end{algorithmic}
 We generated $100$ boards at random and ran our baseline algorithm on the boards and recorded its performance. The baseline achieved an average score of $7.38$ using an average path length of $25.31$. This roughly corresponds to the baseline algorithm being able to align $4$ groups of three orbs each.
 
+\vspace*{-0.1in}
 \section{AI Improvements}
 For the remainder of the quarter, our goal will be to improve upon our AI, utilizing various strategies from both human players and techniques from the course.
 \vspace*{-0.15in}
@@ -70,28 +71,27 @@ For the remainder of the quarter, our goal will be to improve upon our AI, utili
 Because of the scoring mechanisms in this game, it is advantageous to find many groups of three rather than to look for larger groups, due to the combo multiplier that is applied in step $5$ of the board evaluation. Consequently, the predominant strategy for human players is to build their puzzle board up from the bottom, filling each row with two separate groups of three. From surveying multiple high level players, we found that they can typically make $6$ to $7$ groups of three per turn, resulting in scores that range from $13.5$ to $17.5$.
 \vspace*{-0.15in}
 \subsection{AI Strategies}
-There are a variety of strategies we could try to improve our AI. The first would be to use reinforcement learning. We would need to collapse the state space of the PAD puzzle problem to something much smaller. One idea would be to base the state features around the notion of average distance between orbs of the same color. Grouping orbs involves bringing scatted orbs together, and so our reinforcement learning algorithm could locally reward moves that reduce distances between orbs of the same color.
-\vspace*{-0.15in}
+There are a variety of strategies we could try to improve our AI. The first would be to use reinforcement learning. We would need to collapse the state space of the PAD puzzle problem to something much smaller. One idea would be to base the state features around the notion of average distance between orbs of the same color. Grouping orbs involves bringing scattered orbs together, and so our reinforcement learning algorithm could locally reward moves that reduce distances between orbs of the same color.
+\vspace*{-0.1in}
 \subsection{Using Computer Vision}
-In addition to improving the gameplay of our AI, we would also like to implement a computer vision component for the AI. This component would take in a screenshot of the game and use it to determine the board layout, allowing our AI to work directly off of a screenshot, which would be much more useful for dishonest players. Implementing such a vision component would require us to explore image segmentation techniques to detect the orbs.
-
+In addition to improving the gameplay of our AI, we would also like to implement a computer vision component for the AI. This component would take in a screenshot of the game and use it to determine the board layout, allowing our AI to work directly off of a screenshot, which would be much more useful for cheating. Implementing such a vision component would require us to explore image segmentation techniques to detect the orbs.
+\vspace*{-0.1in}
 \section{Related Work}
-Here are some of the resources we plan to use to learn more about how to improve our AI.
-
+We were unable to find any papers directly on PAD, but we did find resources on AI techniques we can use to improve our AI.
+\vspace*{-0.15in}
 \subsection{Reinforcement Learning}
-In their paper, \textit{High-level Reinforcement Learning in Strategy Games}, Amato and Shani use Q-learning and Model-based Q-learning (Dyna-Q) to play a turn-based strategy game, Civilization IV. They do this by defining four state features - population difference, land difference, military power difference, and remaining land. Using these states, their AI applied the different reinforcement learning algorithms to find the best action to take each turn. In the Frederick versus Washington matchup, they found greatest success over their baseline of random policies with Dyna-Q, improving their win rate versus a fixed AI from $51\%$ to $62\%$.
-
+The paper \cite{2} describes using various temporal difference methods to learn how to play a variety of board games. In particular, it explores how to use reinforcement learning to learn from human players and human strategies. In PAD, the common human strategy discussed in the previous section does actually perform very well, and learning how to quantify such a strategy and optimize movements around it could produce a very good AI.
+\vspace*{-0.15in}
 \subsection{Computer Vision}
-The notes in \cite{2} give a comprehensive comparison of various common segmentation algorithms, many of which are implemented in OpenCV. Understanding the pros and cons of these algorithms will be extremely useful in picking the right one for the computer vision component of the AI. For now, a mean-shift clustering approach might work well on the orbs, since each orb consists of similar shades of the same color.
+The notes in \cite{3} give a comprehensive comparison of various common segmentation algorithms, many of which are implemented in OpenCV. Understanding the pros and cons of these algorithms will be extremely useful in picking the right one for the computer vision component of the AI. We think a mean-shift clustering approach might work well on the orbs, since each orb consists of similar shades of the same color.
 
 \begin{thebibliography}{1}
-
-\bibitem{1} Some shit on RL.
-\bibitem{2} A Review of Computer Vision Segmentation Algorithms, \url{https://courses.cs.washington.edu/courses/cse576/12sp/notes/remote.pdf}
+\bibitem{1} pndopt, \url{http://kennytm.github.io/pndopt/pndopt.html}
+\bibitem{2} Learning to Play Board Games using Temporal Differences Methods, \url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.80.6366&rep=rep1&type=pdf}
+\bibitem{3} A Review of Computer Vision Segmentation Algorithms, \url{https://courses.cs.washington.edu/courses/cse576/12sp/notes/remote.pdf}
 
 
 \end{thebibliography}
 
 \end{document}
-
 
