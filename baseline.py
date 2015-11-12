@@ -66,15 +66,15 @@ def testRandomBaseLine(board):
   printBoard(finalBoard)
   print '***********************************\n'
 
-def simulate():
+def simulate(numBoards = 100, moves = 40, iters = 1000):
   total = 0
   lenTotal = 0
-  for i in xrange(100):
+  for i in xrange(numBoards):
     if i%10 == 0:
       print i
     board = getRandomBoard()
-    score, path = randomBaseline(board)
+    score, path = randomBaseline(board, moves, iters)
     total += score
     lenTotal += len(path) - 1
-  print "avg score:", total/100.0, "avg len:", lenTotal/100.0
+  print "avg score:", total * 1.0 / numBoards, "avg len:", lenTotal * 1.0 / numBoards
 

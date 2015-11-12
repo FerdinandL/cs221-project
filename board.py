@@ -19,7 +19,6 @@ def printBoard(board):
   for i in xrange(numRows):
     print ' '.join(colors[c] if c < numColors else '*' for c in board[i])
 
-
 def findLinears(board):
   linears = [([], []) for c in xrange(numColors)]
 
@@ -125,6 +124,39 @@ def scoreBoard(board):
     score += colorScore
   score *= (combos + 3) * 0.25
   return score
+
+# return the number of row and column linears
+# faster heuristic for estimating the score on a board
+def countLinears(board):
+  linearCount = 0
+  for i in xrange(numRows):
+    row = board[i]
+    color = None
+    num = 0
+    for j in xrange(numCols):
+      if row[j] == color:
+        num += 1
+        continue
+      if num >= 3:
+        linearCount += 1
+      color = row[j]
+      num = 1
+    if num >= 3:
+      linearCount += 1
+  for j in xrange(numCols):
+    color = None
+    num = 0
+    for i in xrange(numRows):
+      if board[i][j] == color:
+        num += 1
+        continue
+      if num >= 3:
+        linearCount += 1
+      color = board[i][j]
+      num = 1
+    if num >= 3:
+      linearCount += 1
+  return linearCount
 
 
 def testScore(board):
