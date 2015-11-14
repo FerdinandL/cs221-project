@@ -4,13 +4,17 @@ from board import *
 import numpy
 
 deltas = {'U': (-1, 0), 'R': (0, 1), 'D': (1, 0), 'L': (0, -1), 'S': (0, 0)}
+moveDist = ['U', 'R', 'D', 'L'] * 5 + ['S']
 
-def initPopulation(size = 10000, length = 20):
+def initPopulation(size, length, startRow, startCol):
   population = []
-  distribution = ['U', 'R', 'D', 'L'] * 5 + ['S']
   for i in xrange(size):
-    rand = [random.randint(0, len(distribution) - 1) for j in xrange(length)]
-    population.append(''.join(distribution[ind] for ind in rand))
+    # while True:
+    rand = [random.randint(0, len(moveDist) - 1) for j in xrange(length)]
+    path = ''.join(moveDist[ind] for ind in rand)
+      # if isLegalPath(path, startRow, startCol):
+      #   break
+    population.append(path)
   return population
 
 
@@ -53,38 +57,87 @@ def scorePath(board, path, startRow, startCol):
   finalBoard = followPath(board, path, startRow, startCol)
   return countLinears(finalBoard)
 
-def advanceGeneration(board, population, startRow, startCol):
-  scores = [scorePath(board, path, startRow, startCol)**2 for path in population]
-  cdf = numpy.cumsum(scores)
+def chooseParents(population, cdf, num):
   total = cdf[-1]
-  print 'totalScore:', total
+  return [population[numpy.searchsorted(cdf, random.randint(1, total))] for _ in xrange(num)]
+
+def onePointCrossover(parents):
+  split = random.randint(0, len(parents[0]) - 1)
+  return parents[0][:split] + parents[1][split:]
+
+def twoPointCrossover(parents):
+  length = len(parents[0])
+  split1 = random.randint(0, length - 1)
+  split2 = random.randint(0, length - 1)
+  maxSplit = max(split1, split2)
+  minSplit = min(split1, split2)
+  return parents[0][:minSplit] + parents[1][minSplit:maxSplit] + parents[0][maxSplit:]
+
+def mutate(population):
+  pass
+  # length = len(population[0])
+  # numMoves = len(moveDist)
+  # prob = 1.0/length
+  # for i, path in enumerate(population):
+  #   if random.random() > prob:
+  #     continue
+  #   index = random.randint(0, length - 1)
+  #   population[i] = path[:index] + moveDist[random.randint(0, numMoves - 1)] + path[index+1:]
+
+
+def advanceGeneration(board, population, startRow, startCol):
+  scores = [scorePath(board, path, startRow, startCol) for path in population]
+  cdf = numpy.cumsum(scores)
+  #print 'avgScore:', cdf[-1] * 1.0/len(population)
   newPop = []
-  for i in xrange(len(population)/2):
-    path1 = population[numpy.searchsorted(cdf, random.randint(1, total))]
-    path2 = population[numpy.searchsorted(cdf, random.randint(1, total))]
-    split = random.randint(0, len(path1) - 1)
-    newPop.append(path1[:split] + path2[split:])
-    newPop.append(path2[:split] + path2[split:])
+  while len(newPop) < len(population):
+    parents = chooseParents(population, cdf, 2)
+    child = onePointCrossover(parents)
+    newPop.append(child)
+  mutate(newPop)
   return newPop
 
-def geneticAlg(size = 10000, length = 20, gen = 20):
+def geneticAlg(size, length, gen):
   initBoard = getRandomBoard()
-  pop = initPopulation(size, length)
-  for i in xrange(gen):
-    pop = advanceGeneration(initBoard, pop, 3, 3)
-  total = 0
   bestScore = 0
   bestPath = None
-  for path in pop:
-    if not isLegalPath(path, 3, 3):
-      continue
-    score = scoreBoard(followPath(initBoard, path, 3, 3))
-    total += score
-    if score > bestScore:
-      bestPath = path
-      bestScore = score
+  bestLoc = None
+  for i in xrange(3):
+    startRow = random.randint(1, numRows - 2)
+    startCol = random.randint(1, numCols - 2)
+    pop = initPopulation(size, length, startRow, startCol)
+    for i in xrange(gen):
+      pop = advanceGeneration(initBoard, pop, startRow, startCol)
+    total = 0
+    for path in pop:
+      if not isLegalPath(path, startRow, startCol):
+        continue
+      score = scoreBoard(followPath(initBoard, path, startRow, startCol))
+      total += score
+      if score > bestScore:
+        bestPath = path
+        bestScore = score
+        bestLoc = (startRow, startCol)
   print "best score:", bestScore
-  print "avg score:", total * 1.0 / size
+  #print "avg score:", total * 1.0 / size
+  return bestScore, bestPath, bestLoc
+
+def pathLength(path):
+  stopCount = 0
+  for i in xrange(len(path)):
+    if path[i] == 'S':
+      stopCount += 1
+  return len(path) - stopCount
+
+def simulate():
+  total = 0
+  lenTotal = 0
+  numBoards = 30
+  for _ in xrange(numBoards):
+    score, path, start = geneticAlg(10000, 30, 50)
+    total += score
+    lenTotal += pathLength(path)
+  print "avg score:", total * 1.0 / numBoards, "avg len:", lenTotal * 1.0 / numBoards
 
 
 
