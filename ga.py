@@ -3,8 +3,8 @@ from copy import deepcopy
 from board import *
 import numpy
 
-deltas = {'U': (-1, 0), 'R': (0, 1), 'D': (1, 0), 'L': (0, -1), 'S': (0, 0)}
-moveDist = ['U', 'R', 'D', 'L'] * 5 + ['S']
+deltas = {'U': (-1, 0), 'R': (0, 1), 'D': (1, 0), 'L': (0, -1), 'P': (0, 0)}
+moveDist = ['U', 'R', 'D', 'L'] * 5 + ['P']
 
 def initPopulation(size, length, startRow, startCol):
   population = []
@@ -123,11 +123,11 @@ def geneticAlg(size, length, gen):
   return bestScore, bestPath, bestLoc
 
 def pathLength(path):
-  stopCount = 0
+  pauseCount = 0
   for i in xrange(len(path)):
-    if path[i] == 'S':
-      stopCount += 1
-  return len(path) - stopCount
+    if path[i] == 'P':
+      pauseCount += 1
+  return len(path) - pauseCount
 
 def simulate():
   total = 0
