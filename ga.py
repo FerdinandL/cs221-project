@@ -62,6 +62,11 @@ def followPath(originalBoard, path, startRow, startCol):
   for m in path:
     row = prevRow + deltas[m][0]
     col = prevCol + deltas[m][1]
+
+    # Use this if you want to just truncate scoring instead of giving 0
+    # if row < 0 or col < 0 or row >= numRows or col >= numCols:
+      # return board
+
     board[prevRow][prevCol] = board[row][col]
     board[row][col] = color
     prevRow = row
@@ -147,7 +152,7 @@ def geneticAlg(size, length, gen):
   bestLoc = None
   iterScore = 0
   multIter = 0.0
-  for x in xrange(3):
+  for x in xrange(1):
     pop = initPopulation(size, length)
     for i in xrange(gen):
       print x, 'generation', i

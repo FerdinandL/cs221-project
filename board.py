@@ -168,6 +168,7 @@ def skyfallScoreBoard(originalBoard):
 # faster heuristic for estimating the score on a board
 def countLinears(board):
   linearCount = 0
+  totalOrbs = 0
   for i in xrange(numRows):
     row = board[i]
     color = None
@@ -178,10 +179,12 @@ def countLinears(board):
         continue
       if num >= 3:
         linearCount += 1
+        totalOrbs += num
       color = row[j]
       num = 1
     if num >= 3:
       linearCount += 1
+      totalOrbs += num
   for j in xrange(numCols):
     color = None
     num = 0
@@ -191,11 +194,16 @@ def countLinears(board):
         continue
       if num >= 3:
         linearCount += 1
+        totalOrbs += num
       color = board[i][j]
       num = 1
     if num >= 3:
       linearCount += 1
-  return linearCount
+      totalOrbs += num
+  # return linearCount
+  if linearCount == 0: 
+    return 0
+  return ((totalOrbs - 3 * linearCount) * .25 + linearCount) * ((linearCount - 1) * .25 + 1) * 16
 
 
 def testScore(board):
