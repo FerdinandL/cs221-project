@@ -5,6 +5,8 @@ numColors = 6
 numRows = 5
 numCols = 6
 colors = ['F', 'G', 'W', 'L', 'D', 'H']
+emptyColor = 6
+
 
 def getRandomBoard(seed=None):
   if seed != None:
@@ -28,7 +30,7 @@ def findLinears(board):
     color = None
     num = 0
     for j in xrange(numCols):
-      if row[j] == color:
+      if row[j] == color and color != emptyColor:
         num += 1
         continue
       if num >= 3:
@@ -43,7 +45,7 @@ def findLinears(board):
     color = None
     num = 0
     for i in xrange(numRows):
-      if board[i][j] == color:
+      if board[i][j] == color and color != emptyColor:
         num += 1
         continue
       if num >= 3:
@@ -110,9 +112,7 @@ def groupSize(group):
         locations.add((i,j))
   return len(locations)
 
-def scoreBoard(board):
-  linears = findLinears(board)
-  grouped = groupLinears(linears)
+def rawScoreAndComboCount(grouped):
   combos = 0
   score = 0.0
   for index, colorGroups in enumerate(grouped):
@@ -122,8 +122,47 @@ def scoreBoard(board):
       groupScore = (groupSize(linearGroup) + 1) * 0.25
       colorScore += groupScore
     score += colorScore
-  score *= (combos + 3) * 0.25
-  return score
+  return combos, score
+
+def scoreBoard(board):
+  linears = findLinears(board)
+  grouped = groupLinears(linears)
+  combos, score = rawScoreAndComboCount(grouped)
+  return score * (combos + 3) * 0.25
+
+def skyfall(board, linears):
+  for index, colorLinears in enumerate(linears):
+    for linear in colorLinears[0] + colorLinears[1]:
+      for i in xrange(linear[0][0], linear[0][1]):
+        for j in xrange(linear[1][0], linear[1][1]):
+          board[i][j] = emptyColor
+  for j in xrange(numCols):
+    emptyCount = 0
+    for i in reversed(xrange(numRows)):
+      if board[i][j] == emptyColor:
+        emptyCount += 1
+      elif emptyCount != 0:
+        board[i + emptyCount][j] = board[i][j]
+        board[i][j] = emptyColor
+
+
+def skyfallScoreBoard(originalBoard):
+  board = deepcopy(originalBoard)
+  score = -1
+  totalScore = 0.0
+  totalCombos = 0
+  # printBoard(board)
+  # print '--------------'
+  while score != 0:
+    linears = findLinears(board)
+    grouped = groupLinears(linears)
+    combos, score = rawScoreAndComboCount(grouped)
+    totalScore += score
+    totalCombos += combos
+    skyfall(board, linears)
+    # print 'combos found:', combos
+    # printBoard(board)
+  return totalScore * (totalCombos + 3) * 0.25
 
 # return the number of row and column linears
 # faster heuristic for estimating the score on a board
@@ -177,7 +216,7 @@ def testGroupedLinears(board):
       for linear in linearGroup:
         for i in xrange(linear[0][0], linear[0][1]):
           for j in xrange(linear[1][0], linear[1][1]):
-            boardCopy[i][j] = numColors
+            boardCopy[i][j] = emptyColor
       printBoard(boardCopy)
       print ''
     print '***********************************\n'
@@ -194,7 +233,7 @@ def testLinears(board):
       boardCopy = deepcopy(board)
       for i in xrange(linear[0][0], linear[0][1]):
         for j in xrange(linear[1][0], linear[1][1]):
-          boardCopy[i][j] = numColors
+          boardCopy[i][j] = emptyColor
       printBoard(boardCopy)
       print ''
     print '***********************************\n'
