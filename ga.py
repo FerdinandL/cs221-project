@@ -129,12 +129,11 @@ def pathLength(path):
       stopCount += 1
   return len(path) - stopCount
 
-def simulate():
+def simulate(numBoards=30, size=10000, maxLength=30, gen=50):
   total = 0
   lenTotal = 0
-  numBoards = 30
   for _ in xrange(numBoards):
-    score, path, start = geneticAlg(10000, 30, 50)
+    score, path, start = geneticAlg(size, maxLength, gen)
     total += score
     lenTotal += pathLength(path)
   print "avg score:", total * 1.0 / numBoards, "avg len:", lenTotal * 1.0 / numBoards

@@ -1,0 +1,55 @@
+Here is a brief description of our codebase
+
+board.py
+--------
+Contains the utility functions for creating a board, printing a board, and
+scoring a board. Functions of interest:
+
+generateRandomBoard(): return a randomly generated board
+scoreBoard(board): given a board, return the score
+skyfallScoreBoard(board): return the score, including points from additional
+  matches made after initial orbs disappear, and remaning orbs fall into place
+countLinears(board): return a score heuristic, which is faster than computing
+  a full score
+
+
+baseline.py
+-----------
+Contains the randomized baseline implementation. Functions of interest:
+
+simulate(numBoards, moves, iters): run the baseline algorithm on specified
+  number of randomized boards. The limit for the length of a path is specified
+  by `moves`, and number of iterations used for each board is specified by
+  `iters`.
+
+
+annealing.py
+------------
+Contains the hill-climbing implementations. Functions of interest:
+
+simulateSteepestAscentHillClimbing(numTrials): run the steepest ascent
+  hill-climbing algorithm on specified number of random boards
+simulateSimulatedAnnealing(prob, numBoards, iters): run simulated annealing on
+  `numBoards` number of random boards. The probability of accepting a worse
+  move is specified by `prob`, and `iters` gives the number of trials on each
+  board.
+
+
+ga.py
+-----
+Contains the implementation for our basic genetic algorithm. Functions of
+interest:
+
+simulate(numBoards, size, maxLength, gen): run the genetic algorithm with
+  given population size of 10000, a max path length, for specified number of
+  generations. Number of boards can be specified by changing `numBoards`.
+
+
+ga2.py
+------
+Contains the implementation of our improved genetic algorithm, which also
+accounts for locations on the grid.
+
+simulate(numBoards, size, avgLength, gen): run our improved genetic algorithm
+  with given population size of 10000, a max path length, for specified number
+  of generations. Number of boards can be specified by changing `numBoards`.
